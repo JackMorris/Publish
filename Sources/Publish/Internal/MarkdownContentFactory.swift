@@ -44,7 +44,7 @@ internal struct MarkdownContentFactory<Site: Website> {
                     dateComponents.year!,
                     dateComponents.month!,
                     dateComponents.day!,
-                    basePath.string.dropFirst(datePrefix.count)
+                    String(basePath.string.dropFirst(datePrefix.count))
                 ))
             } else {
                 return basePath
