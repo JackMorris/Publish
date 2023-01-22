@@ -29,7 +29,7 @@ internal struct MarkdownContentFactory<Site: Website> {
         let tags = try decoder.decodeIfPresent("tags", as: [Tag].self)
         let content = try makeContent(fromMarkdown: markdown, file: file, decoder: decoder)
         let rssProperties = try decoder.decodeIfPresent("rss", as: ItemRSSProperties.self)
-        let path: String = {
+        let path: Path = {
             let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: content.date)
             let datePrefix = String(
                 format: "%04d-%02d-%02d-",
@@ -37,15 +37,15 @@ internal struct MarkdownContentFactory<Site: Website> {
                 dateComponents.month!,
                 dateComponents.day!)
             let basePath = try decoder.decodeIfPresent("path", as: Path.self) ?? path
-            if basePath.hasPrefix(datePrefix) {
+            if basePath.string.hasPrefix(datePrefix) {
                 // Strip date components, add to file path.
-                return String(
+                return Path(String(
                     format: "%04d/%02d/%02d/%@",
                     dateComponents.year!,
                     dateComponents.month!,
                     dateComponents.day!,
-                    basePath.dropFirst(datePrefix.count)
-                )
+                    basePath.string.dropFirst(datePrefix.count)
+                ))
             } else {
                 return basePath
             }
