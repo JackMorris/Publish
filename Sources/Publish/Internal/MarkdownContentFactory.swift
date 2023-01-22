@@ -26,10 +26,30 @@ internal struct MarkdownContentFactory<Site: Website> {
         let decoder = makeMetadataDecoder(for: markdown)
 
         let metadata = try Site.ItemMetadata(from: decoder)
-        let path = try decoder.decodeIfPresent("path", as: Path.self) ?? path
         let tags = try decoder.decodeIfPresent("tags", as: [Tag].self)
         let content = try makeContent(fromMarkdown: markdown, file: file, decoder: decoder)
         let rssProperties = try decoder.decodeIfPresent("rss", as: ItemRSSProperties.self)
+        let path: String = {
+            let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: content.date)
+            let datePrefix = String(
+                format: "%04d-%02d-%02d-",
+                dateComponents.year!,
+                dateComponents.month!,
+                dateComponents.day!)
+            let basePath = try decoder.decodeIfPresent("path", as: Path.self) ?? path
+            if basePath.hasPrefix(datePrefix) {
+                // Strip date components, add to file path.
+                return String(
+                    format: "%04d/%02d/%02d/%@",
+                    dateComponents.year!,
+                    dateComponents.month!,
+                    dateComponents.day!,
+                    basePath.dropFirst(datePrefix.count)
+                )
+            } else {
+                return basePath
+            }
+        }()
 
         return Item(
             path: path,
